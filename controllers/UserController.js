@@ -18,7 +18,6 @@ userController.create = async (req, res) => {
             key
         });
 
-    
         const userToken = generateUserToken(createdUser.id, process.env.SECRET);
 
         res.status(201).json({
