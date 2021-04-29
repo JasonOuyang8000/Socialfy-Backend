@@ -4,17 +4,17 @@ const postcontroller = {};
 
 postcontroller.getPosts = async(req, res) => {
     try {
-        const posts = await models.posts.findAll({
+        const posts = await models.post.findAll({
             include: [
             {
                 model: models.user,
-                attributes:['name']
+                attributes:['alias']
             },
             {
                 model: models.comment,
                 include: {
                     model: models.user, 
-                    attributes:['name']
+                    attributes:['alias']
                 }
             }
         ]});
@@ -25,6 +25,7 @@ postcontroller.getPosts = async(req, res) => {
 
     }
     catch(error) {
+        console.log(error);
         res.status(400).json(error);
     }
 };
@@ -41,15 +42,24 @@ postcontroller.getPost = async(req, res) => {
 
 postcontroller.createPost = async(req, res) => {
     try {
-        const { findUser } = req;
+        const { userFind } = req;
 
         const { description } = req.body;
 
-        if ( findUser === null) res.status(400).json({error:{ message: 'User does not exist'}});
+        if ( userFind === null || userFind === undefined) return res.status(400).json({error:{ message: 'User does not exist'}});
 
         const post = await models.post.create({
             description,
             likes: 0,
+        });
+
+        await userFind.addPost(post);
+
+        await post.reload({
+            include: {
+                model: models.user,
+                attributes: ['alias']
+            }
         });
 
         res.json({post});
@@ -61,11 +71,62 @@ postcontroller.createPost = async(req, res) => {
 };
 
 
-postcontroller.deletePost = async(req, res) => {
+postcontroller.createComment = async(req, res) => {
     try {
         const { userFind } = req;
+        const { id } = req.params;
+        const { description } = req.body;
         
-        if (!userFind) return res.status(400).json({error: {message: "User does not exist."}});
+        if ( userFind === null || userFind === undefined) return res.status(400).json({error:{ message: 'User does not exist'}});
+
+        const findPost = await models.post.findOne({
+            where: { id },
+            include: [{
+                model: models.comment,
+                include: {
+                    model: models.user, 
+                    attributes:['alias']
+                },
+               
+            },
+            {
+                model: models.user,
+                attributes: ['alias']
+            }
+        ]
+        });
+        
+        if ( findPost === null) return res.status(400).json({error:{ message: 'Post does not exist'}});
+        
+        const comment = await models.comment.create({
+            description,
+            likes: 0
+        });
+
+        await userFind.addComment(comment);
+        await findPost.addComment(comment); 
+        await findPost.reload();
+
+        res.json({
+            post: findPost
+        });
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json({
+            error
+        });
+    }
+}
+
+
+postcontroller.deletePost = async(req, res) => {
+    try {
+    
+        const { userFind } = req;
+        
+        if (!userFind) return res.status(400).json({error: {message: "Not authorized"}});
         
         const { id } = req.params; 
 

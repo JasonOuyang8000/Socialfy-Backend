@@ -22,7 +22,8 @@ userController.create = async (req, res) => {
 
         res.status(201).json({
             key: encryptedKey,
-            userToken
+            userToken,
+            alias: createdUser.alias
         });
     }
     catch(error) {
@@ -43,12 +44,11 @@ userController.login = async (req,res) => {
             }
         });
 
-    
-
         if (findUser !== null ) {
             const userToken = generateUserToken(findUser.id, process.env.SECRET);
             res.json({
-                userToken
+                userToken,
+                alias: findUser.alias
             });
         }
 
