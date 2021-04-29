@@ -1,21 +1,42 @@
-const bcrypt = require('bcryptjs');
+const encryptor = require('simple-encryptor');
 const jwt = require('jsonwebtoken');
+const models = require('../models');
+const uniqueKey = require('unique-key');
 
-// Creates a Password using Bcrypt
-const generatePassword = (password) => {
-    const salt = bcrypt.genSaltSync(10);
-    return bcrypt.hashSync(password, salt);
 
+const generatePassword = (password,secret) => {
+    return encryptor(secret).encrypt(password);
 }
 
-// Check Password
-const validatePassword = (password) => {
-    return password.length >= 5 && password.length <=30;
-};
-
-const checkPassword = (password, hash) => {
-    return bcrypt.compareSync(password, hash);
+const checkPassword = (password, hash, secret) => {
+    return password === encryptor(secret).decrypt(hash);
 }
+
+const decryptKey = (key, secret) => {
+   
+    return encryptor(secret).decrypt(key);
+} 
+
+
+const generateUniqueKey = async() => {
+    let key = uniqueKey(32);
+    try {
+        const allUsers = await models.user.findAll();
+      
+        while (allUsers.some(user => user.key === key)) {
+            key = uniqueKey(32);
+        }
+    
+    }
+    catch (error) {
+        console.log(error);
+    }
+    
+    
+
+    return key;
+}
+
 
 const generateUserToken = (userId, secret) => {
     const token = jwt.sign({id: userId}, secret);
@@ -28,4 +49,4 @@ const verifyUserToken = (token, secret) => {
     return id;
 }
 
-module.exports = {generatePassword, checkPassword, generateUserToken, validatePassword, verifyUserToken}
+module.exports = {generatePassword, checkPassword, generateUserToken, verifyUserToken, generateUniqueKey, decryptKey}

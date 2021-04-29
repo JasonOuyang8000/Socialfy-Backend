@@ -1,29 +1,33 @@
-const { generatePassword, checkPassword, generateUserToken } = require('../helpers/helperFunctions');
-const { user } = require('../models/');
+const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
+const { user } = require('../models');
+
 
 const userController = {};
 
 userController.create = async (req, res) => {
     try {
      
-        const { alias,key } = req.body;
-      
-        const hashedKey = generatePassword(key);
+        const { alias } = req.body;
+        
+        const key = await generateUniqueKey();
+
+        const encryptedKey = generatePassword(key,process.env.SECRET_KEY);
      
         const createdUser = await user.create({
             alias,
-            key: hashedKey
+            key
         });
 
     
         const userToken = generateUserToken(createdUser.id, process.env.SECRET);
 
         res.status(201).json({
+            key: encryptedKey,
             userToken
         });
     }
     catch(error) {
-        console.log(error);
+      
         res.status(400).json({
             error
         });
@@ -36,11 +40,13 @@ userController.login = async (req,res) => {
     try {
         const findUser = await user.findOne({
             where: {
-                key
+                key: decryptKey(key,process.env.SECRET_KEY)
             }
         });
+
     
-        if (checkPassword(password, findUser.password)) {
+
+        if (findUser !== null ) {
             const userToken = generateUserToken(findUser.id, process.env.SECRET);
             res.json({
                 userToken
@@ -55,7 +61,8 @@ userController.login = async (req,res) => {
     
     }
     catch (error) {
-        res.status({error});
+        console.log(error);
+        res.status(400).json({error});
     } 
 }
 
@@ -64,7 +71,8 @@ userController.verify = (req, res) => {
         const { userFind } = req;
 
         return res.status(200).json({
-            message: 'ok'
+            message: 'ok',
+            alias: userFind.alias
         });
     }
     catch (error) {
