@@ -11,11 +11,8 @@ module.exports = {
       description: {
         type: Sequelize.TEXT
       },
-      likes: {
-        type: Sequelize.INTEGER
-      },
       userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       postId: {
         type: Sequelize.INTEGER

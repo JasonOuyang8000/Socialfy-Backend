@@ -1,5 +1,6 @@
 const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
-const { user } = require('../models');
+const { user, postLike } = require('../models');
+
 
 
 const userController = {};
@@ -32,7 +33,8 @@ userController.create = async (req, res) => {
         });
     }
     catch(error) {
-        if (error.errors) res.status(400).json({error: {message: error.message}});
+   
+        if (error.errors) return res.status(400).json({error: {message: error.message}});
      
     
         res.status(400).json({
@@ -79,9 +81,9 @@ userController.login = async (req,res) => {
 userController.verify = (req, res) => {
     try {
       
-
+      
         const { userFind } = req;
-
+        console.log(userFind)
     
         return res.status(200).json({
             message: 'ok',
@@ -97,6 +99,9 @@ userController.verify = (req, res) => {
         });
     }
 }
+
+
+
 
 
 module.exports = userController;

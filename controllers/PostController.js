@@ -1,5 +1,6 @@
 const models = require('../models');
 
+
 const postcontroller = {};
 
 postcontroller.getPosts = async(req, res) => {
@@ -16,7 +17,14 @@ postcontroller.getPosts = async(req, res) => {
                     model: models.user, 
                     attributes:['alias']
                 }
-            }
+            },
+            {
+                model: models.postLike,
+                include: {
+                    model: models.user, 
+                    attributes:['alias']
+                }
+            },
         ]});
 
         res.json({
@@ -50,7 +58,6 @@ postcontroller.createPost = async(req, res) => {
 
         const post = await models.post.create({
             description,
-            likes: 0,
         });
 
         await userFind.addPost(post);
@@ -99,8 +106,7 @@ postcontroller.createComment = async(req, res) => {
         if ( findPost === null) return res.status(400).json({error:{ message: 'Post does not exist'}});
         
         const comment = await models.comment.create({
-            description,
-            likes: 0
+            description
         });
 
         await userFind.addComment(comment);
@@ -151,6 +157,61 @@ postcontroller.deletePost = async(req, res) => {
         res.status(400).json(error);
     }
 };
+
+postcontroller.likePost = async (req, res) => {
+    try {
+        const { userFind } = req;
+        const { id } = req.params;
+
+        const post = await models.post.findOne({
+            where: {
+                id
+            }
+       
+        });
+
+       
+
+        if ( userFind === null || userFind === undefined) return res.status(400).json({error:{ message: 'User does not exist'}});
+
+        if (post === null) return res.status(404).json({error: {message:'Post does not exist'}});
+
+        const [postLike, created] = await models.postLike.findOrCreate({
+            where: { 
+                userId: userFind.id,
+                postId: id  
+            },
+            defaults: {
+                userId: userFind.id,
+                postId: id,
+                liked: true
+            }
+        });
+
+        if (!created) {
+            await postLike.update({
+                liked: !postLike.liked
+            });
+        }
+
+        await post.reload({
+            include: [{
+                model: models.postLike,
+                include: {
+                    model: models.user,
+                    attributes: ['alias']
+                }
+            }]
+        });
+      
+        res.json({post});
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json(error);
+    }
+}
 
 
 module.exports = postcontroller;

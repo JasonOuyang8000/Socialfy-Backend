@@ -5,7 +5,7 @@ const findUser = async (req, res, next) => {
     try {
 
       if (req.headers.authorization) {
-        const token = req.headers.authorization.split(' ')[1]
+        const token = req.headers.authorization.split(' ')[1];
 
         const { id } = jwt.verify(token, process.env.SECRET);
         const user = await models.user.findOne({
@@ -24,7 +24,7 @@ const findUser = async (req, res, next) => {
   
       next();
     } catch (error) {
-   
+      console.log(error);
       res.status(400).json({ error: error.message })
     }
 }
