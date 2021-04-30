@@ -83,7 +83,7 @@ userController.verify = (req, res) => {
       
       
         const { userFind } = req;
-        console.log(userFind)
+      
     
         return res.status(200).json({
             message: 'ok',

@@ -9,7 +9,7 @@ postcontroller.getPosts = async(req, res) => {
             include: [
             {
                 model: models.user,
-                attributes:['alias']
+                attributes:['alias','image']
             },
             {
                 model: models.comment,
