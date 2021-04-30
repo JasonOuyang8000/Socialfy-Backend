@@ -16,8 +16,27 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   user.init({
-    alias: DataTypes.STRING,
-    key: DataTypes.TEXT
+    alias: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
+    },
+    key: {
+      type:DataTypes.TEXT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
+    },
+    image: {
+      type:DataTypes.TEXT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
+    }
   }, {
     sequelize,
     modelName: 'user',

@@ -7,7 +7,7 @@ const userController = {};
 userController.create = async (req, res) => {
     try {
      
-        const { alias } = req.body;
+        const { alias,image } = req.body;
         
         const key = await generateUniqueKey();
 
@@ -15,19 +15,26 @@ userController.create = async (req, res) => {
      
         const createdUser = await user.create({
             alias,
-            key
+            key,
+            image
         });
 
         const userToken = generateUserToken(createdUser.id, process.env.SECRET);
 
         res.status(201).json({
-            key: encryptedKey,
+            user: {
+                key: encryptedKey,
+                alias: createdUser.alias,
+                image: createdUser.image
+            },
             userToken,
-            alias: createdUser.alias
+        
         });
     }
     catch(error) {
-      
+        if (error.errors) res.status(400).json({error: {message: error.message}});
+     
+    
         res.status(400).json({
             error
         });
@@ -37,18 +44,22 @@ userController.create = async (req, res) => {
 
 userController.login = async (req,res) => {
     const { key } = req.body;
+   
     try {
         const findUser = await user.findOne({
             where: {
                 key: decryptKey(key,process.env.SECRET_KEY)
             }
         });
-
+     
         if (findUser !== null ) {
             const userToken = generateUserToken(findUser.id, process.env.SECRET);
             res.json({
                 userToken,
-                alias: findUser.alias
+                user: {
+                    alias: findUser.alias,
+                    image: findUser.image
+                }
             });
         }
 
@@ -60,18 +71,24 @@ userController.login = async (req,res) => {
     
     }
     catch (error) {
-        console.log(error);
+    
         res.status(400).json({error});
     } 
 }
 
 userController.verify = (req, res) => {
     try {
+      
+
         const { userFind } = req;
 
+    
         return res.status(200).json({
             message: 'ok',
-            alias: userFind.alias
+            user: {
+                alias: userFind.alias,
+                image: userFind.image
+            },
         });
     }
     catch (error) {
