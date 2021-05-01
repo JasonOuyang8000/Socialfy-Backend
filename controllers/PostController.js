@@ -25,7 +25,11 @@ postcontroller.getPosts = async(req, res) => {
                     attributes:['alias']
                 }
             },
-        ]});
+            
+        ],
+        order: [['updatedAt', 'DESC']]
+    
+    });
 
         res.json({
             posts
