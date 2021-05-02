@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: {
         notEmpty: true,
+        len: {
+          args: [4,12],
+          msg: "Alias has to be 4 to 12 characters"
+        }
       }
     },
     key: {

@@ -1,3 +1,4 @@
+const { deleteAws } = require('../helpers/delete');
 const models = require('../models');
 
 
@@ -15,7 +16,7 @@ postcontroller.getPosts = async(req, res) => {
                 model: models.comment,
                 include: {
                     model: models.user, 
-                    attributes:['alias']
+                    attributes:['alias','id']
                 }
             },
             {
@@ -24,6 +25,11 @@ postcontroller.getPosts = async(req, res) => {
                     model: models.user, 
                     attributes:['alias','id']
                 }
+            },
+            {
+                model: models.postImage,
+                attributes:['link']
+             
             },
             
         ],
@@ -58,6 +64,8 @@ postcontroller.createPost = async(req, res) => {
 
         const { description } = req.body;
 
+
+
         if ( userFind === null || userFind === undefined) return res.status(400).json({error:{ message: 'User does not exist'}});
 
         const post = await models.post.create({
@@ -65,13 +73,35 @@ postcontroller.createPost = async(req, res) => {
         });
 
         await userFind.addPost(post);
+  
 
-        await post.reload({
-            include: {
-                model: models.user,
-                attributes: ['alias','id']
-            }
-        });
+        if (req.file) {
+            await post.createPostImage({
+                key: req.file.key,
+                link: req.file.location
+            });
+
+            await post.reload({
+                include: [{
+                    model: models.user,
+                    attributes: ['alias','id']
+                },
+                {
+                    model: models.postImage,
+                    attributes: ['link']
+                }]
+            });
+        }
+        else {
+            await post.reload({
+                include: {
+                    model: models.user,
+                    attributes: ['alias','id']
+                }
+            });
+        }
+
+     
 
         res.json({post});
 
@@ -131,6 +161,7 @@ postcontroller.createComment = async(req, res) => {
 }
 
 
+
 postcontroller.deletePost = async(req, res) => {
     try {
     
@@ -147,6 +178,11 @@ postcontroller.deletePost = async(req, res) => {
         if (findPost === null) return res.status(400).json({error: {message: "Post Does Not Exist"}});
        
         if (await userFind.hasPost(findPost)) {
+            const postImage = await findPost.getPostImage();
+
+            if (postImage !== null) {
+                deleteAws(postImage.key);
+            }
             await findPost.destroy();
             res.status(204).json({});
         }
@@ -215,8 +251,11 @@ postcontroller.likePost = async (req, res) => {
             },
             {
                 model: models.comment
+            },
+            {
+                model: models.postImage,
+                attributes: ['link']
             }
-        
         ]
         });
       

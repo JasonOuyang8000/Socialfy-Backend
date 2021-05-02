@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       models.post.hasMany(models.comment,{onDelete: 'cascade',hooks: true });
       models.post.hasMany(models.postLike, {onDelete: 'cascade',hooks: true });
+      models.post.hasOne(models.postImage, {onDelete: 'cascade',hooks: true });
       models.post.belongsTo(models.user);
     }
   };
