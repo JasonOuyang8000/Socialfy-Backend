@@ -212,6 +212,9 @@ postcontroller.likePost = async (req, res) => {
             {
                 model: models.user,
                 attributes: ['alias','image','id']
+            },
+            {
+                model: models.comment
             }
         
         ]
