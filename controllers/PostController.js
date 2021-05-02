@@ -9,7 +9,7 @@ postcontroller.getPosts = async(req, res) => {
             include: [
             {
                 model: models.user,
-                attributes:['alias','image']
+                attributes:['alias','image','id']
             },
             {
                 model: models.comment,
@@ -22,7 +22,7 @@ postcontroller.getPosts = async(req, res) => {
                 model: models.postLike,
                 include: {
                     model: models.user, 
-                    attributes:['alias']
+                    attributes:['alias','id']
                 }
             },
             
@@ -69,7 +69,7 @@ postcontroller.createPost = async(req, res) => {
         await post.reload({
             include: {
                 model: models.user,
-                attributes: ['alias']
+                attributes: ['alias','id']
             }
         });
 
@@ -96,13 +96,13 @@ postcontroller.createComment = async(req, res) => {
                 model: models.comment,
                 include: {
                     model: models.user, 
-                    attributes:['alias']
+                    attributes:['alias','id']
                 },
                
             },
             {
                 model: models.user,
-                attributes: ['alias']
+                attributes: ['alias','id']
             }
         ]
         });
@@ -136,7 +136,7 @@ postcontroller.deletePost = async(req, res) => {
     
         const { userFind } = req;
         
-        if (!userFind) return res.status(400).json({error: {message: "Not authorized"}});
+        if (!userFind) return res.status(404).json({error: {message: "Not authorized"}});
         
         const { id } = req.params; 
 
@@ -167,6 +167,8 @@ postcontroller.likePost = async (req, res) => {
         const { userFind } = req;
         const { id } = req.params;
 
+        
+
         const post = await models.post.findOne({
             where: {
                 id
@@ -180,6 +182,7 @@ postcontroller.likePost = async (req, res) => {
 
         if (post === null) return res.status(404).json({error: {message:'Post does not exist'}});
 
+     
         const [postLike, created] = await models.postLike.findOrCreate({
             where: { 
                 userId: userFind.id,
@@ -203,19 +206,63 @@ postcontroller.likePost = async (req, res) => {
                 model: models.postLike,
                 include: {
                     model: models.user,
-                    attributes: ['alias']
+                    attributes: ['alias','image','id']
                 }
-            }]
+            },
+            {
+                model: models.user,
+                attributes: ['alias','image','id']
+            }
+        
+        ]
         });
       
         res.json({post});
 
     }
     catch(error) {
-        console.log(error);
+        
         res.status(400).json(error);
     }
 }
+
+
+postcontroller.getComments = async (req,res) => {
+    const { id } = req.params;
+
+    try {
+        const post = await models.post.findOne({
+            where: {
+                id
+            }
+       
+        });
+
+        if (post === null) return res.status(404).json({error: {message:'Post does not exist'}});
+
+        const comments = await post.getComments({
+            include:{
+                model: models.user,
+                attributes: ['alias','image','id']
+            },
+            order: [['updatedAt', 'DESC']]
+        });
+
+        res.json({
+            comments
+        });
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json({
+            error
+        });
+    }
+}
+
+
+
 
 
 module.exports = postcontroller;

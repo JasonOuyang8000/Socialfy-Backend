@@ -26,7 +26,8 @@ userController.create = async (req, res) => {
             user: {
                 key: encryptedKey,
                 alias: createdUser.alias,
-                image: createdUser.image
+                image: createdUser.image,
+                id: createdUser.id
             },
             userToken,
         
@@ -60,7 +61,8 @@ userController.login = async (req,res) => {
                 userToken,
                 user: {
                     alias: findUser.alias,
-                    image: findUser.image
+                    image: findUser.image,
+                    id: findUser.id
                 }
             });
         }
@@ -89,7 +91,8 @@ userController.verify = (req, res) => {
             message: 'ok',
             user: {
                 alias: userFind.alias,
-                image: userFind.image
+                image: userFind.image,
+                id: userFind.id
             },
         });
     }
