@@ -145,10 +145,16 @@ postcontroller.createComment = async(req, res) => {
 
         await userFind.addComment(comment);
         await findPost.addComment(comment); 
-        await findPost.reload();
+        
+        await comment.reload({
+            include: {
+                model: models.user, 
+                attributes:['alias','id']
+            }
+        })
 
         res.json({
-            post: findPost
+            comment
         });
 
     }

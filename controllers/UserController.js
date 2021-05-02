@@ -1,5 +1,5 @@
 const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
-const { user, postLike } = require('../models');
+const { user, post, postLike, comment, postImage } = require('../models');
 
 
 
@@ -82,8 +82,6 @@ userController.login = async (req,res) => {
 
 userController.verify = (req, res) => {
     try {
-      
-      
         const { userFind } = req;
       
     
@@ -103,6 +101,64 @@ userController.verify = (req, res) => {
     }
 }
 
+
+userController.getPosts = async (req,res) => {
+    try {
+       const { id } = req.params;
+
+       const userFind = await user.findOne({
+           where: {
+               id
+           }
+       });
+     
+
+        const userPosts = await userFind.getPosts({
+            include: [
+                {
+                    model: user,
+                    attributes:['alias','image','id']
+                },
+                {
+                    model: comment,
+                    include: {
+                        model: user, 
+                        attributes:['alias','id']
+                    }
+                },
+                {
+                    model: postLike,
+                    include: {
+                        model: user, 
+                        attributes:['alias','id']
+                    }
+                },
+                {
+                    model: postImage,
+                    attributes:['link']
+                 
+                },
+                
+            ],
+            order: [['updatedAt', 'DESC']]
+        });
+
+      
+        res.json({
+            posts: userPosts
+        });
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json({
+            error
+        });
+    }
+}
+
+
+           
 
 
 
