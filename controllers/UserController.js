@@ -145,7 +145,12 @@ userController.getPosts = async (req,res) => {
 
       
         res.json({
-            posts: userPosts
+            posts: userPosts,
+            user: {
+                id: userFind.id,
+                alias: userFind.alias,
+                image: userFind.image
+            }
         });
 
     }
