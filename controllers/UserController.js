@@ -1,5 +1,6 @@
+const { Op } = require('sequelize');
 const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
-const { user, post, postLike, comment, postImage } = require('../models');
+const { user, post, postLike, comment, postImage, request } = require('../models');
 
 
 
@@ -161,6 +162,132 @@ userController.getPosts = async (req,res) => {
         });
     }
 }
+
+
+userController.requestFriend = async (req,res) => {
+
+    try {
+        const { userFind:sender } = req;
+        const { id } = req.params;
+        const {cancel} = req.body;
+    
+        const receiver = await user.findOne({
+            where: {
+                id
+            }
+        });
+    
+        if (receiver === null || sender === null) return res.status(404).json({
+            error: {
+                message: "User does not exist."
+            }
+        });
+
+        if (receiver.id === sender.id) return res.status(404).json({
+            error: {
+                message: "Can't request on same user."
+            }
+        });
+
+        const [foundRequest] = await sender.getReceivedRequests({
+            where: {
+                sentId: receiver.id,
+                accept: {
+                    [Op.or]: [null, false]
+                }
+            }
+        });
+
+       
+    
+        if (foundRequest !== undefined && foundRequest.accept !== null) {
+            if (foundRequest.accept === false) {
+                if (cancel) {
+                    await foundRequest.update({
+                        accept: null
+                    });                    
+                }
+                else {
+                    await foundRequest.update({
+                        accept: null
+                    });
+
+                    // Add Friend Here
+                }
+            }
+        }
+    
+        // else if (await sender.hasReceivedRequest(foundRequest) || receiver.hasSentRequest(foundRequest)) {
+        //     return res.status(400).json({
+        //         error: {
+        //             message: 'Internal Server Error'
+        //         }
+        //     });
+        // }
+    
+        else {
+             const [findRequest, createdRequest] = await request.findOrCreate({
+                    where: {
+                        sentId: sender.id,
+                        requestId: receiver.id,
+                        accept: {
+                            [Op.or]: [null, false]
+                        }
+                    },
+                    defaults: {
+                        accept: false,
+                        sentId: sender.id,
+                        requestId: null,
+                    }
+            });
+
+            await receiver.addReceivedRequests(findRequest);
+
+            if (cancel) {
+                await findRequest.update({
+                    accept: null
+                });
+            }
+
+            else {
+                
+                await findRequest.update({
+                    accept: false,
+                    
+                });
+
+            }
+        
+
+        }
+
+        console.log(await receiver.getReceivedRequests())
+        console.log(await receiver.getSentRequests())
+      
+
+        res.json({
+            requests: {
+                received: await sender.getReceivedRequests(),
+                requested: await sender.getSentRequests(),
+              
+            }
+        });
+           
+    }
+   
+
+  catch(error) {
+    console.log(error);
+    return res.status(400).json({
+        error
+    });
+  }
+
+  
+
+   
+    
+};
 
 
            
