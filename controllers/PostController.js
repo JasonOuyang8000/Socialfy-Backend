@@ -64,6 +64,7 @@ postcontroller.createPost = async(req, res) => {
 
         const { description } = req.body;
         
+      
 
 
         if ( userFind === null || userFind === undefined) return res.status(400).json({error:{ message: 'User does not exist'}});

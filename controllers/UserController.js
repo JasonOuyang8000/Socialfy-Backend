@@ -274,6 +274,11 @@ userController.requestFriend = async (req,res) => {
                         accept: {
                             [Op.is]: false
                         }
+                    },
+                    include: {
+                        model: user,
+                        attributes: ['alias','image','id'],
+                        as: 'sentRequests'
                     }
                 }),
                 requested: await sender.getSentRequests({
@@ -281,6 +286,11 @@ userController.requestFriend = async (req,res) => {
                         accept: {
                             [Op.is]: false
                         }
+                    },
+                    include: {
+                        model: user,
+                        attributes: ['alias','image','id'],
+                        as: 'receivedRequests'
                     }
                 }),
             }
@@ -357,6 +367,11 @@ userController.getFriendRequest = async(req,res) => {
                         accept: {
                             [Op.is]: false
                         }
+                    },
+                    include: {
+                        model: user,
+                        attributes: ['alias','image','id'],
+                        as: 'sentRequests'
                     }
                 }),
                 requested: await sender.getSentRequests({
@@ -364,6 +379,11 @@ userController.getFriendRequest = async(req,res) => {
                         accept: {
                             [Op.is]: false
                         }
+                    },
+                    include: {
+                        model: user,
+                        attributes: ['alias','image','id'],
+                        as: 'receivedRequests'
                     }
                 }),
             }
@@ -371,6 +391,7 @@ userController.getFriendRequest = async(req,res) => {
 
     }
     catch(error) {
+        console.log(error);
         res.status(400).json({
             error
         });
