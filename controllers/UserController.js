@@ -172,6 +172,8 @@ userController.requestFriend = async (req,res) => {
         const { userFind:sender } = req;
         const { id } = req.params;
         const {cancel} = req.body;
+
+
     
         const receiver = await user.findOne({
             where: {
@@ -184,6 +186,14 @@ userController.requestFriend = async (req,res) => {
                 message: "User does not exist."
             }
         });
+
+        if (await sender.hasFriend(receiver) || await sender.hasOtherFriend(receiver)) {
+            return res.status(404).json({
+                error: {
+                    message: "Can't Request on another existing friend"
+                }
+            });
+        }
 
         if (receiver.id === sender.id) return res.status(404).json({
             error: {
@@ -246,7 +256,6 @@ userController.requestFriend = async (req,res) => {
                 
                 await findRequest.update({
                     accept: false,
-                    
                 });
 
             }
