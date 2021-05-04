@@ -173,6 +173,7 @@ userController.requestFriend = async (req,res) => {
         const { id } = req.params;
         const {cancel} = req.body;
 
+        let friends = false;
 
     
         const receiver = await user.findOne({
@@ -225,6 +226,7 @@ userController.requestFriend = async (req,res) => {
                     });
                     // Add Friend Here
                     await receiver.addFriend(sender);
+                    friends = true;
                 }
             }
         }
@@ -262,9 +264,10 @@ userController.requestFriend = async (req,res) => {
         
 
         }
-      
+   
 
-        res.json({
+        res.json({  
+            friends: friends,
             requests: {
                 received: await sender.getReceivedRequests({
                     where: {
@@ -304,7 +307,20 @@ userController.requestFriend = async (req,res) => {
 
 userController.getFriends = async(req,res) => {
     try {
-        const {userFind} = req;
+       const userFind = await user.findOne({
+           where: {
+               id: req.params.id
+           }
+       })
+
+       if (userFind === null) {
+           return res.status(405).json({
+               error: {
+                   message: 'User does not exist'
+               }
+           })
+       }
+       console.log(req.userFind);
 
         let allfriends = await Promise.all([
             userFind.getFriends(),
@@ -314,8 +330,9 @@ userController.getFriends = async(req,res) => {
         allfriends = allfriends.flat(1);
 
         res.json({
-           allfriends 
-        })
+           allfriends,
+
+        });
 
     }
     catch(error) {
@@ -327,9 +344,13 @@ userController.getFriends = async(req,res) => {
 }
 
 userController.getFriendRequest = async(req,res) => {
-    const { userFind:sender } = req;
+    
+
+    const {userFind: sender} = req;
+
     try {
         res.json({
+          
             requests: {
                 received: await sender.getReceivedRequests({
                     where: {

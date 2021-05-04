@@ -15,7 +15,7 @@ userRouter.put('/:id/request', requestFriend);
 
 userRouter.get('/request', getFriendRequest);
 
-userRouter.get('/friend', getFriends);
+userRouter.get('/:id/friend', getFriends);
 
 
 
