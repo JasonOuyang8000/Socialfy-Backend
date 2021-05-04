@@ -1,8 +1,7 @@
 require('dotenv').config()
 const express = require('express');
 const rowdyLogger = require('rowdy-logger');
-const { newImage } = require('./helpers/upload');
-const AWS = require('aws-sdk');
+
 
 const { findUser } = require('./middlewears/userAuth');
 
