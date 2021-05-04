@@ -1,6 +1,8 @@
 const { Op } = require('sequelize');
+
+
 const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
-const { user, post, postLike, comment, postImage, request } = require('../models');
+const { user, post, postLike, comment, postImage, request, friend } = require('../models');
 
 
 
@@ -211,20 +213,11 @@ userController.requestFriend = async (req,res) => {
                     await foundRequest.update({
                         accept: null
                     });
-
                     // Add Friend Here
+                    await receiver.addFriend(sender);
                 }
             }
         }
-    
-        // else if (await sender.hasReceivedRequest(foundRequest) || receiver.hasSentRequest(foundRequest)) {
-        //     return res.status(400).json({
-        //         error: {
-        //             message: 'Internal Server Error'
-        //         }
-        //     });
-        // }
-    
         else {
              const [findRequest, createdRequest] = await request.findOrCreate({
                     where: {
@@ -260,21 +253,19 @@ userController.requestFriend = async (req,res) => {
         
 
         }
-
-        console.log(await receiver.getReceivedRequests())
-        console.log(await receiver.getSentRequests())
       
 
         res.json({
             requests: {
                 received: await sender.getReceivedRequests(),
                 requested: await sender.getSentRequests(),
-              
             }
         });
            
     }
-   
+
+
+
 
   catch(error) {
     console.log(error);
@@ -288,6 +279,42 @@ userController.requestFriend = async (req,res) => {
    
     
 };
+
+
+userController.getFriends = async(req,res) => {
+    try {
+        const {userFind} = req;
+
+        let allfriends = await Promise.all([
+            userFind.getFriends(),
+            userFind.getOtherFriends()
+        ])
+
+        allfriends = allfriends.flat(1);
+
+        res.json({
+           allfriends 
+        })
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json({
+            error
+        });
+    }
+}
+
+userController.getFriendRequest = async(req,res) => {
+    const { userFind } = req;
+    try {
+       
+        
+    }
+    catch(error) {
+
+    }
+}
 
 
            

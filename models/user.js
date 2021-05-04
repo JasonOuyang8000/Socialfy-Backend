@@ -14,10 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       models.user.hasMany(models.comment, {onDelete: 'cascade',hooks: true });
       models.user.hasMany(models.postLike, {onDelete: 'cascade',hooks: true });
       models.user.hasMany(models.post), {onDelete: 'cascade',hooks: true };
-      
       models.user.hasMany(models.request,{as:'sentRequests',foreignKey:'sentId'});
       models.user.hasMany(models.request,{as:'receivedRequests',foreignKey:'requestId'});
-      // models.user.belongsToMany(models.user,{foreignKey:'sentId',as:'sentRequests',through:'request'});
+      models.user.belongsToMany(models.user,{foreignKey:'userId',otherKey:'friendId',as:'friends',through:'friend'});
+      models.user.belongsToMany(models.user,{foreignKey:'friendId',otherKey:'userId',as:'otherFriends',through:'friend'});
 
       // models.user.belongsToMany(models.user,{foreignKey:'requestId',as:'receivedRequests', through:'request'});
   
