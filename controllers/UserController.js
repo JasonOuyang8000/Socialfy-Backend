@@ -257,8 +257,20 @@ userController.requestFriend = async (req,res) => {
 
         res.json({
             requests: {
-                received: await sender.getReceivedRequests(),
-                requested: await sender.getSentRequests(),
+                received: await sender.getReceivedRequests({
+                    where: {
+                        accept: {
+                            [Op.is]: false
+                        }
+                    }
+                }),
+                requested: await sender.getSentRequests({
+                    where: {
+                        accept: {
+                            [Op.is]: false
+                        }
+                    }
+                }),
             }
         });
            
@@ -306,13 +318,32 @@ userController.getFriends = async(req,res) => {
 }
 
 userController.getFriendRequest = async(req,res) => {
-    const { userFind } = req;
+    const { userFind:sender } = req;
     try {
-       
-        
+        res.json({
+            requests: {
+                received: await sender.getReceivedRequests({
+                    where: {
+                        accept: {
+                            [Op.is]: false
+                        }
+                    }
+                }),
+                requested: await sender.getSentRequests({
+                    where: {
+                        accept: {
+                            [Op.is]: false
+                        }
+                    }
+                }),
+            }
+        });
+
     }
     catch(error) {
-
+        res.status(400).json({
+            error
+        });
     }
 }
 
