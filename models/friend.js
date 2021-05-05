@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      
-      
+      models.friend.hasMany(models.message);
+  
     }
   };
   friend.init({

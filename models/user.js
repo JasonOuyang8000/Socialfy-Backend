@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       models.user.hasMany(models.request,{as:'receivedRequests',foreignKey:'requestId'});
       models.user.belongsToMany(models.user,{foreignKey:'userId',otherKey:'friendId',as:'friends',through:'friend'});
       models.user.belongsToMany(models.user,{foreignKey:'friendId',otherKey:'userId',as:'otherFriends',through:'friend'});
+      models.user.hasMany(models.message);
 
       // models.user.belongsToMany(models.user,{foreignKey:'requestId',as:'receivedRequests', through:'request'});
   

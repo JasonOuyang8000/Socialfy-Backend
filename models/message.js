@@ -11,11 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      models.message.belongsTo(models.user);
+      models.message.belongsTo(models.friend);
     }
   };
   message.init({
     info: DataTypes.TEXT,
-    friendId: DataTypes.INTEGER
+    friendId: DataTypes.INTEGER,
+    userId:DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'message',

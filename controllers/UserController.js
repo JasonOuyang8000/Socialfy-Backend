@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 
 
 const { generatePassword, generateUserToken, generateUniqueKey, decryptKey } = require('../helpers/helperFunctions');
-const { user, post, postLike, comment, postImage, request, friend } = require('../models');
+const { user, post, postLike, comment, postImage, request, friend, message } = require('../models');
 
 
 
@@ -315,7 +315,7 @@ userController.requestFriend = async (req,res) => {
 };
 
 
-userController.getFriends = async(req,res) => {
+userController.getFriends = async (req,res) => {
     try {
        const userFind = await user.findOne({
            where: {
@@ -398,9 +398,211 @@ userController.getFriendRequest = async(req,res) => {
     }
 }
 
+userController.message = async (req,res) => {
+    try {
+        const { userFind:messenger } = req;
+        const { id } = req.params;
+        const { info } = req.body;
 
+        const receiver = await user.findOne({
+            where: {
+                id
+            }
+        });
+
+        if (receiver === null || messenger === null) return res.status(404).json({
+            error: {
+                message: 'User does not exist'
+            }
+        });
+
+     
+        let current = null;
+        let friendRelation = null;
+        let newMessage = null;
+     
+       if (await messenger.hasFriend(receiver) ) {
+
+            [current] = await messenger.getFriends({
+                where: {
+                    id
+                },
+            })
+            
+            friendRelation = await friend.findOne({
+                where: {
+                    userId: current.friend.userId,
+                    friendId: current.friend.friendId
+                },
+                attributes:['id']
+            });
+
+            
+            newMessage = await message.create({
+                info,
+                userId: messenger.id,
+                friendId: friendRelation.id
+            })
+
+
+     
+
+
+       }
+       
+       else if (await messenger.hasOtherFriend(receiver)) {
+         
+            [current] = await messenger.getOtherFriends({
+                where: {
+                    id
+                },
+                attributes:[
+                    'id'
+                ]
+            });
+
+      
+
+            friendRelation = await friend.findOne({
+                where: {
+                    userId: current.friend.userId,
+                    friendId: current.friend.friendId
+                },
+                attributes:['id']
+            });
+
+            
+
+            
+            newMessage = await message.create({
+                info,
+                userId: messenger.id,
+                friendId: friendRelation.id
+            })
+            
+
+       }
+       else {
+            return res.status(404).json({
+                error: {
+                    message: 'Not related!'
+                }
+            });
+       }
+    
+     
+
+    
+       const messages = await friendRelation.getMessages({
+            include: {
+                model: user,
+                attributes: ['id','alias','image']
+            },
+            order: [['updatedAt', 'ASC']]
+       });
+            
+    
+       
+      
+        
+        res.json({
+            messages
+        });
+    }
+    catch(error) {
+        console.log(error);
+
+        res.status(400).json({
+            error
+        });
+    }
+};
            
+userController.getMessages = async (req,res) => {
 
+    try {
+        const { userFind:messenger } = req;
+        const { id } = req.params;
+    
+        const receiver = await user.findOne({
+            where: {
+                id
+            }
+        });
+        
+        
+        let friendRelation = null;
+    
+        if (receiver === null || messenger === null) return res.status(404).json({
+            error: {
+                message: 'User does not exist'
+            }
+        });
+        if (await messenger.hasFriend(receiver) ) {
+            const  [current] = await messenger.getFriends({
+                where: {
+                    id
+                },
+            });
+
+            
+            friendRelation = await friend.findOne({
+                where: {
+                    userId: current.friend.userId,
+                    friendId: current.friend.friendId
+                },
+                attributes:['id']
+            });
+            
+        }
+    
+        else if (await messenger.hasOtherFriend(receiver)) {
+            const  [current] = await messenger.getOtherFriends({
+                where: {
+                    id
+                },
+            });
+
+            
+            friendRelation = await friend.findOne({
+                where: {
+                    userId: current.friend.userId,
+                    friendId: current.friend.friendId
+                },
+                attributes:['id']
+            });
+        }
+    
+        else {
+            return res.status(404).json({
+                error: {
+                    message: 'Not Friend Relation'
+                }
+            });
+        }
+
+        
+       const messages = await friendRelation.getMessages({
+            include: {
+                model: user,
+                attributes: ['id','alias','image']
+            },
+            order: [['updatedAt', 'ASC']]
+        });
+        
+        res.json({
+            messages
+        });
+
+    }
+    catch(error) {
+        console.log(error);
+        res.status(400).json({
+            error
+        });
+    }
+    
+}
 
 
 

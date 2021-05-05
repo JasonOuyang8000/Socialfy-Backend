@@ -1,6 +1,6 @@
 const userRouter = require('express').Router();
 
-const { create, login, verify, getPosts, requestFriend, getFriends, getFriendRequest } = require('../controllers/UserController');
+const { create, login, verify, getPosts, requestFriend, getFriends, getFriendRequest, message, getMessages } = require('../controllers/UserController');
 
 
 userRouter.post('', create);
@@ -16,6 +16,10 @@ userRouter.put('/:id/request', requestFriend);
 userRouter.get('/request', getFriendRequest);
 
 userRouter.get('/:id/friend', getFriends);
+
+userRouter.get('/:id/message', getMessages);
+
+userRouter.post('/:id/message', message);
 
 
 
