@@ -38,12 +38,12 @@ userController.create = async (req, res) => {
     }
     catch(error) {
    
-        if (error.errors) return res.status(400).json({error: {message: error.message}});
-     
+    if (error.errors) return res.status(400).json({error: {message: error.errors[0].message}});
     
-        res.status(400).json({
-            error
-        });
+
+    res.status(400).json({
+        error
+    });
     }
 
 }
