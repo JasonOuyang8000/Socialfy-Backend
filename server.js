@@ -22,9 +22,12 @@ app.use(express.json());
 app.use(require('cors')());
 app.use(findUser);
 
+
+
+
+
 app.use('/user', userRouter);
 app.use('/post', postRouter);
-
 
 
 

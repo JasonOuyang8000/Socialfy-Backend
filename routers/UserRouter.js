@@ -21,6 +21,21 @@ userRouter.get('/:id/message', getMessages);
 
 userRouter.post('/:id/message', message);
 
+userRouter.get('/connect', (req,res) => {
+
+    try {
+        return res.json({
+            success: true
+        })
+    }
+    catch (error) {
+        return res.status(400).json({
+            success: false
+        })
+    }
+  
+});
+
 
 
 module.exports = userRouter;
